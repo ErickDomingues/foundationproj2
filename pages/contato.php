@@ -1,5 +1,4 @@
 <?php  
-    try{        
         $botaoClicado= $Ferramenta->get_post_action('sendFormulario');
         
         if (isset($_POST[$botaoClicado])) {
@@ -11,16 +10,17 @@
             // unset => Exclui a variável informada do array $SendClienteFornecedor
             unset($SendFormulario[$botaoClicado]);
             //EXECUTA A INSERÇÃO NO BANCO                
-            $Query->Insert('bf_msgsite', $SendFormulario);
+           
             //Passa para as variaveis a mensagem de confirmação
             $titulo="Sucesso!";
             $mensagem="Assim que sua mensagem for analisada nós retornaremos o contato.<br> Muito Obrigado!";
+			$mensagem=$mensagem."<br><br>Nome: ".$SendFormulario[CTS_ST_NOME];
+			$mensagem=$mensagem."<br>Sobrenome: ".$SendFormulario[CTS_ST_SOBRENOME];
+			$mensagem=$mensagem."<br>Email: ".$SendFormulario[CTS_ST_EMAIL];
+			$mensagem=$mensagem."<br>Titulo mensagem: ".$SendFormulario[CTS_ST_TITULO];
+			$mensagem=$mensagem."<br>Mensagem: ".$SendFormulario[CTS_ST_MENSAGEM];
         }
-    }catch (Exception $e){
-        $titulo="Atenção!";
-        $mensagemPadraoErro="Não foi possível efetuar a inclusão, ";
-            $mensagem='Ocorreu um erro interno, caso a mensagem persista entre em contato:'.$contatoAtrati;
-    }      
+    
 ?>
 <div class="container marketing">
       <div class="row featurette">
