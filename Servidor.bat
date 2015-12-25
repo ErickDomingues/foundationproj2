@@ -1,0 +1,1 @@
+php -S localhost:8085 -t "C:\Users\ERICK\Documents\NetBeansProjects\Foundation"
