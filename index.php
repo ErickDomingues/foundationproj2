@@ -76,8 +76,9 @@ setlocale(LC_ALL, 'pt_BR');
         //Inclus�o do footer
         include_once 'footer.php';
     } else {
-        //include 'pages/ERRO_404.php';
-        header("Location:" . $pg . '.php');
+        include 'pages/ERRO_404.php';
+        //header("Location:" . $pg . '.php');
+        header("HTTP/1.0 404 Not Found");
 die;
     }
     ?>
