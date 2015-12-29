@@ -9,6 +9,8 @@ $Query = new Query();
 
 date_default_timezone_set("America/Sao_Paulo");
 setlocale(LC_ALL, 'pt_BR');
+
+include './Conexao.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -44,6 +46,7 @@ setlocale(LC_ALL, 'pt_BR');
     </head>
 
     <?php
+    //VERSÃO EM BANCO DE DADOS//
 //function getKey($key)
 //{
 //// Verifica se $_GET[$key] est� com algum valor, se estiver retorna, sen�o passa nulo
@@ -59,29 +62,132 @@ setlocale(LC_ALL, 'pt_BR');
     $Pagina = explode('/', $uri);
     $pg = $Pagina[1];
 
-
 // Inclus�o do home
 // Se a pagina existir inclua, sen�o traga a home
 // echo 'pages/' . $pg . '.php';
-    if (is_file('pages/' . $pg . '.php')) {
+    //Estabelece a conexão com o banco de dados
+    $con = conexaoDB();
+    //Prepara a seleção da pagina
+    $stmt = $con->prepare('select * from site where uri = :nome');
+    //Seta o nome da pagina
+    $stmt->bindValue(':nome', $pg);
+    //Executa a seleção 
+    $stmt->execute();
+
+
+    //Verifica se foi informada alguma uri
+    if (isset($_POST['pesquisa'])) {
+        include_once 'header.php';
+        echo "   <div  style='height: 100px' class='container' ></div><div class='container marketing'><h4>Resultado da pesquisa</h4>";
+
+        $stmt = $con->prepare('select * from site where conteudo like :nome');
+        //Seta o nome da pagina
+        $stmt->bindValue(':nome', '%' . $_POST['pesquisa'] . '%');
+
+        $stmt->execute();
+        if ($stmt->rowCount() > 0) {
+            $Dados = $stmt->fetchall(PDO::FETCH_NAMED);
+            foreach ($Dados as $ViewDados) {
+                echo "<a href='{$ViewDados['uri']}'>Pagina:{$ViewDados['uri']}</a><br>";
+            }
+        } else {
+            echo "Nenhuma pagina encontrada com o conteúdo informado!";
+        }
+        //Inclus�o do footer
+        include_once 'footer.php';
+    } elseif ($pg === "fixture") {
+        echo "<br>INICIANDO<br>";
+        echo "removendo tabelas ...<br>";
+        $con->query('DROP TABLE IF EXISTS clientes');
+        echo "<br>removendo tabelas = ok<br>";
+        
+        echo "criando tabelas ...<br>";
+        $con->query('CREATE TABLE clientes (
+            id  int(7) NOT NULL AUTO_INCREMENT ,
+            name  varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+            PRIMARY KEY (id)
+            )');
+        echo "<br>criando tabelas = ok<br>";
+        
+        echo "Inserindo dados de teste ...<br>";
+        for ($index = 1; $index < 10; $index++) {
+            $stmt = $con->prepare("INSERT INTO clientes VALUES ('{$index}', 'Clinte {$index}')");
+            $stmt->execute();
+        }
+        echo "<br>Inserindo dados de teste = ok<br>";
+        echo "<br>CONCLUÍDO<br>";
+        
+    } elseif ($stmt->rowCount() > 0) {
+        //Inclus�o do Header
+
+        include_once 'header.php';
+
+        $dados = $stmt->fetch(PDO::FETCH_NAMED);
+
+        echo $dados['conteudo'];
+        //Inclus�o do footer
+        include_once 'footer.php';
+        //Executa caso não tenha sido selecionada nenhuma uri
+    } elseif ($pg === "") {
         //Inclus�o do Header
         include_once 'header.php';
-        include 'pages/' . $pg . '.php';
+        $stmt = $con->prepare('select * from site where uri = "home"');
+        $stmt->execute();
+        $dados = $stmt->fetch(PDO::FETCH_NAMED);
+        echo $dados['conteudo'];
+
         //Inclus�o do footer
         include_once 'footer.php';
-    }elseif($pg===""){
-                //Inclus�o do Header
-        include_once 'header.php';
-        include 'pages/home.php';
-        //Inclus�o do footer
-        include_once 'footer.php';
+        //Executa caso tenha sido informada uma uri inexistente
     } else {
-        include 'pages/ERRO_404.php';
+        $stmt = $con->prepare('select * from site where uri = "ERRO_404"');
+        $stmt->execute();
+        $dados = $stmt->fetch(PDO::FETCH_NAMED);
+        echo $dados['conteudo'];
         //header("Location:" . $pg . '.php');
         header("HTTP/1.0 404 Not Found");
-die;
+        die;
     }
-    ?>
 
-    <?php
+
+
+
+//    //VERSÃO EM ARQUIVOS//
+////function getKey($key)
+////{
+////// Verifica se $_GET[$key] est� com algum valor, se estiver retorna, sen�o passa nulo
+////    return isset($_GET[$key]) ? $_GET[$key] : null;
+////}
+////echo $_SERVER['SERVER_NAME'].'<BR>';
+////echo $_SERVER['REQUEST_URI'].'<BR>';
+////
+////echo $_SERVER['SERVER_PROTOCOL'].'<BR>';
+////ECHO $_SERVER['HTTP_HOST'].'<br>';
+//// Busca o nome da Page e o Modulo Selecionado
+//    $uri = $_SERVER['REQUEST_URI'];
+//    $Pagina = explode('/', $uri);
+//    $pg = $Pagina[1];
+//
+//
+//// Inclus�o do home
+//// Se a pagina existir inclua, sen�o traga a home
+//// echo 'pages/' . $pg . '.php';
+//    if (is_file('pages/' . $pg . '.php')) {
+//        //Inclus�o do Header
+//        include_once 'header.php';
+//        include 'pages/' . $pg . '.php';
+//        //Inclus�o do footer
+//        include_once 'footer.php';
+//    } elseif ($pg === "") {
+//        //Inclus�o do Header
+//        include_once 'header.php';
+//        include 'pages/home.php';
+//        //Inclus�o do footer
+//        include_once 'footer.php';
+//    } else {
+//        include 'pages/ERRO_404.php';
+//        //header("Location:" . $pg . '.php');
+//        header("HTTP/1.0 404 Not Found");
+//        die;
+//    }
     ?>
