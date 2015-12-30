@@ -42,6 +42,10 @@ include './Conexao.php';
 
         <!-- Custom styles for this template -->
         <link href="carousel.css" rel="stylesheet">
+        <script src="ckeditor/ckeditor.js"></script>
+<script src="ckeditor/samples/js/sample.js"></script>
+<link rel="stylesheet" href="ckeditor/samples/css/samples.css">
+<link rel="stylesheet" href="ckeditor/samples/toolbarconfigurator/lib/codemirror/neo.css">
 
     </head>
 
@@ -59,7 +63,8 @@ include './Conexao.php';
 //ECHO $_SERVER['HTTP_HOST'].'<br>';
 // Busca o nome da Page e o Modulo Selecionado
     $uri = $_SERVER['REQUEST_URI'];
-    $Pagina = explode('/', $uri);
+    $Paginaeget = explode('?', $uri);
+    $Pagina = explode('/', $Paginaeget[0]);
     $pg = $Pagina[1];
 
 // Inclus�o do home
@@ -95,10 +100,28 @@ include './Conexao.php';
         }
         //Inclus�o do footer
         include_once 'footer.php';
+    } elseif ($pg === "admin") {
+        include_once 'header.php';
+        echo '<div style="height:50px"></div>';
+        include_once 'login.php';
+        include_once 'footer.php';
+    } elseif ($pg === "manutpaginas") {
+        include_once 'header.php';
+        echo '<div style="height:100px"></div>';
+        include_once 'manutpaginas.php';
+        include_once 'footer.php';
+    } elseif ($pg === "edicaopaginas") {
+        include_once 'header.php';
+        echo '<div style="height:100px"></div>';
+        include_once 'edicaopaginas.php';
+        include_once 'footer.php';
     } elseif ($pg === "fixture") {
+        echo '<div style="height:50px"></div>';
+        include_once 'header.php';
         echo "<br>INICIANDO<br>";
         echo "removendo tabelas ...<br>";
         $con->query('DROP TABLE IF EXISTS clientes');
+        $con->query('DROP TABLE IF EXISTS usuarios');
         echo "<br>removendo tabelas = ok<br>";
         
         echo "criando tabelas ...<br>";
@@ -107,16 +130,28 @@ include './Conexao.php';
             name  varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
             PRIMARY KEY (id)
             )');
+        
+        $con->query('CREATE TABLE usuarios (
+            id  int(11) NOT NULL AUTO_INCREMENT ,
+            usuario  varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+            email  varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+            senha  varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+            PRIMARY KEY (`id`)
+            )');
+        
         echo "<br>criando tabelas = ok<br>";
         
         echo "Inserindo dados de teste ...<br>";
         for ($index = 1; $index < 10; $index++) {
             $stmt = $con->prepare("INSERT INTO clientes VALUES ('{$index}', 'Clinte {$index}')");
             $stmt->execute();
+            $hash = password_hash('123456',PASSWORD_DEFAULT);
+            $stmt = $con->prepare("INSERT INTO `usuarios` VALUES ('{$index}', 'usuario{$index}', 'usuario{$index}@gmail.com', '{$hash}')");
+            $stmt->execute();
         }
         echo "<br>Inserindo dados de teste = ok<br>";
         echo "<br>CONCLUÍDO<br>";
-        
+        include_once 'footer.php';
     } elseif ($stmt->rowCount() > 0) {
         //Inclus�o do Header
 
